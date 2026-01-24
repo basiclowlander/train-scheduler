@@ -1,0 +1,43 @@
+BEGIN:VCALENDAR
+PRODID:-//Meta//NONSGML Meta Recruiting V1.0//EN
+X-WR-CALNAME:Call with Kevin Barnes
+X-PUBLISHED-TTL:PT12H
+X-ORIGINAL-URL:https://www.metacareers.com/profile/call/?consideration_id=1309120054487163&recruiter_nonce=217IXohZbqul7XI94Mfng1OE1Eq6Ym3X
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+DTSTAMP:19700101T000000Z
+LAST-MODIFIED:19700101T000000Z
+CREATED:19700101T000000Z
+SEQUENCE:0
+ORGANIZER:MAILTO:barnesk@meta.com
+ATTENDEE;ROLE=REQ-PARTICIPANT;PART
+ STAT=ACCEPTED;RSVP=TRUE;CN=Arif Si
+ ddiquee:MAILTO:arif.pasha@gmail.com
+ATTENDEE;ROLE=REQ-PARTICIPANT;PART
+ STAT=ACCEPTED;RSVP=TRUE;CN=Kevin B
+ arnes:MAILTO:barnesk@meta.com
+DTSTART:20260126T200000Z
+DTEND:20260126T203000Z
+UID:e0@facebook.com
+SUMMARY:Call with Kevin Barnes
+URL:https://www.metacareers.com/profile/call/?consideration_id=1309120054487163&recruiter_nonce=217IXohZbqul7XI94Mfng1OE1Eq6Ym3X
+DESCRIPTION:Hi Arif Siddiquee\,\nI&#039\;m lookin
+ g forward to chatting with you on 
+ January 26 at 12:00 PM America/Los
+ _Angeles (GMT -08:00).\nI&#039\;ll c
+ all you at +16502768375. If this t
+ ime doesn&#039\;t work anymore\, you
+  can cancel and reschedule. \nA goo
+ d next step is to  log in to Caree
+ r Profile.   This will give you ac
+ cess to interviewing tips\, status 
+ information and much more as you c
+ ontinue your career journey with M
+ eta. \n Thanks\,\nKevin Barnes\n
+CLASS:PRIVATE
+STATUS:CONFIRMED
+PARTSTAT:NEEDS-ACTION
+END:VEVENT
+END:VCALENDAR
