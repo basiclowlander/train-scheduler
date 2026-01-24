@@ -71,3 +71,9 @@ export default defineConfig([
   },
 ])
 ```
+
+TODO
+====
+
+- Fix image export, it exports extra spaces
+- Give option to input when a person went last, and then generate from a particular week. For example, I should be able to input "Basic" went on January 21st, generate new schedule from January 24
