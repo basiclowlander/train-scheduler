@@ -7,6 +7,7 @@ import {
   SPECIAL_EVENTS_CONFIG as initialSpecialEventsConfig,
 } from './config';
 import { ConfigEditor } from './components/ConfigEditor';
+import { Avatar } from './components/Avatar';
 
 const DAYS = [
   'Sunday',
@@ -56,29 +57,6 @@ export default function ScheduleGenerator() {
     .filter((p) => p.enabled)
     .sort((a, b) => a.order - b.order)
     .map((p) => p.name);
-
-  function Avatar({ label }: { label: string }) {
-    const person = peopleConfig.find((p) => p.name === label);
-    const specialEvent = specialEventsConfig.find((e) => e.name === label);
-    const imgSrc = person
-      ? person.avatar_url
-      : specialEvent
-        ? specialEvent.avatar_url
-        : null;
-
-    return (
-      <div className="relative mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-        {imgSrc && (
-          <img
-            src={imgSrc}
-            alt={label}
-            onError={(e) => (e.currentTarget.style.display = 'none')}
-            className="w-full h-full object-cover"
-          />
-        )}
-      </div>
-    );
-  }
 
   function generateCalendar(
     startDate: Date,
@@ -262,7 +240,11 @@ export default function ScheduleGenerator() {
                             {cell.date}
                           </div>
 
-                          <Avatar label={cell.label} />
+                          <Avatar
+                            label={cell.label}
+                            peopleConfig={peopleConfig}
+                            specialEventsConfig={specialEventsConfig}
+                          />
 
                           <div className="font-semibold text-sm sm:text-base text-gray-100 text-center leading-snug">
                             {cell.label}
