@@ -13,7 +13,7 @@ export const PEOPLE_CONFIG = [
 ];
 
 export const SPECIAL_EVENTS_CONFIG = [
-  { name: "VS Winner", avatar_url: "/assets/img/vs.png", enabled: true, order: 11 },
-  { name: "Birthday", avatar_url: "/assets/img/birthday.jpg", enabled: true, order: 12 },
-  { name: "Donor", avatar_url: "/assets/img/donor.png", enabled: true, order: 13 },
+  { name: "VS Winner", avatar_url: "/assets/img/vs.png", enabled: true, dayOfWeek: "Monday" },
+  { name: "Birthday", avatar_url: "/assets/img/birthday.jpg", enabled: true, dayOfWeek: "Tuesday" },
+  { name: "Donor", avatar_url: "/assets/img/donor.png", enabled: true, dayOfWeek: "Wednesday" },
 ];
