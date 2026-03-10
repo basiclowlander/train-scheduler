@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { toPng } from "html-to-image";
 import { PEOPLE_CONFIG, SPECIAL_EVENTS_CONFIG } from "./config";
 
-const PEOPLE = PEOPLE_CONFIG.filter((p) => p.enabled).map((p) => p.name);
+const PEOPLE = PEOPLE_CONFIG.filter((p) => p.enabled)
+  .sort((a, b) => a.order - b.order)
+  .map((p) => p.name);
 
 const DAYS = [
   "Sunday",
@@ -74,31 +76,41 @@ function generateCalendar(
   let rotationIndex = PEOPLE.indexOf(startingPerson);
   const startDayIndex = mapDayToGridIndex(startDate.getDay());
 
+  const specialEventsMap = new Map(
+    SPECIAL_EVENTS_CONFIG.map((event) => [event.dayOfWeek, event.name])
+  );
+
   for (let week = 0; week < 4; week++) {
     const weekDays: CalendarWeek = Array(7).fill(null);
     const rotated = rotate(PEOPLE, rotationIndex);
-
-    rotationIndex = (rotationIndex + 4) % PEOPLE.length;
+    let personIndex = 0;
 
     for (let offset = 0; offset < 7; offset++) {
       const dayIndex = (startDayIndex + offset) % 7;
+      const dayName = DAYS[dayIndex];
 
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + week * 7 + offset);
 
       let label = "";
-      if (dayIndex === 0) label = rotated[0];
-      else if (dayIndex === 1) label = SPECIAL_EVENTS_CONFIG[0].name;
-      else if (dayIndex === 2) label = SPECIAL_EVENTS_CONFIG[1].name;
-      else if (dayIndex === 3) label = SPECIAL_EVENTS_CONFIG[2].name;
-      else label = rotated[dayIndex - 3];
+      const specialEvent = specialEventsMap.get(dayName);
+      if (specialEvent) {
+        label = specialEvent;
+      } else {
+        if (personIndex < rotated.length) {
+          label = rotated[personIndex];
+          personIndex++;
+        }
+      }
 
       weekDays[dayIndex] = {
-        day: DAYS[dayIndex],
+        day: dayName,
         date: formatDate(date),
         label,
       };
     }
+
+    rotationIndex = (rotationIndex + personIndex) % PEOPLE.length;
 
     weeks.push(weekDays);
   }
