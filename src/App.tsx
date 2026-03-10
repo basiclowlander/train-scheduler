@@ -1,12 +1,9 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toPng } from "html-to-image";
-import { PEOPLE_CONFIG, SPECIAL_EVENTS_CONFIG } from "./config";
-
-const PEOPLE = PEOPLE_CONFIG.filter((p) => p.enabled)
-  .sort((a, b) => a.order - b.order)
-  .map((p) => p.name);
+import { PEOPLE_CONFIG as initialPeopleConfig, SPECIAL_EVENTS_CONFIG as initialSpecialEventsConfig } from "./config";
+import { ConfigEditor } from "./components/ConfigEditor";
 
 const DAYS = [
   "Sunday",
@@ -45,84 +42,100 @@ function mapDayToGridIndex(jsDay: number) {
   return jsDay;
 }
 
-function Avatar({ label }: { label: string }) {
-  const person = PEOPLE_CONFIG.find((p) => p.name === label);
-  const specialEvent = SPECIAL_EVENTS_CONFIG.find((e) => e.name === label);
-  const imgSrc = person
-    ? person.avatar_url
-    : specialEvent
-    ? specialEvent.avatar_url
-    : null;
+export default function ScheduleGenerator() {
+  const [peopleConfig, setPeopleConfig] = useState(initialPeopleConfig);
+  const [specialEventsConfig, setSpecialEventsConfig] = useState(initialSpecialEventsConfig);
 
-  return (
-    <div className="relative mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-      {imgSrc && (
-        <img
-          src={imgSrc}
-          alt={label}
-          onError={(e) => (e.currentTarget.style.display = "none")}
-          className="w-full h-full object-cover"
-        />
-      )}
-    </div>
-  );
-}
+  const PEOPLE = peopleConfig.filter((p) => p.enabled)
+    .sort((a, b) => a.order - b.order)
+    .map((p) => p.name);
 
-function generateCalendar(
-  startDate: Date,
-  startingPerson: string
-): CalendarType {
-  const weeks: CalendarType = [];
-  let rotationIndex = PEOPLE.indexOf(startingPerson);
-  const startDayIndex = mapDayToGridIndex(startDate.getDay());
+  function Avatar({ label }: { label: string }) {
+    const person = peopleConfig.find((p) => p.name === label);
+    const specialEvent = specialEventsConfig.find((e) => e.name === label);
+    const imgSrc = person
+      ? person.avatar_url
+      : specialEvent
+      ? specialEvent.avatar_url
+      : null;
 
-  const specialEventsMap = new Map(
-    SPECIAL_EVENTS_CONFIG.map((event) => [event.dayOfWeek, event.name])
-  );
-
-  for (let week = 0; week < 4; week++) {
-    const weekDays: CalendarWeek = Array(7).fill(null);
-    const rotated = rotate(PEOPLE, rotationIndex);
-    let personIndex = 0;
-
-    for (let offset = 0; offset < 7; offset++) {
-      const dayIndex = (startDayIndex + offset) % 7;
-      const dayName = DAYS[dayIndex];
-
-      const date = new Date(startDate);
-      date.setDate(startDate.getDate() + week * 7 + offset);
-
-      let label = "";
-      const specialEvent = specialEventsMap.get(dayName);
-      if (specialEvent) {
-        label = specialEvent;
-      } else {
-        if (personIndex < rotated.length) {
-          label = rotated[personIndex];
-          personIndex++;
-        }
-      }
-
-      weekDays[dayIndex] = {
-        day: dayName,
-        date: formatDate(date),
-        label,
-      };
-    }
-
-    rotationIndex = (rotationIndex + personIndex) % PEOPLE.length;
-
-    weeks.push(weekDays);
+    return (
+      <div className="relative mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+        {imgSrc && (
+          <img
+            src={imgSrc}
+            alt={label}
+            onError={(e) => (e.currentTarget.style.display = "none")}
+            className="w-full h-full object-cover"
+          />
+        )}
+      </div>
+    );
   }
 
-  return weeks;
-}
+  function generateCalendar(
+    startDate: Date,
+    startingPerson: string
+  ): CalendarType {
+    const weeks: CalendarType = [];
+    let rotationIndex = PEOPLE.indexOf(startingPerson);
+    const startDayIndex = mapDayToGridIndex(startDate.getDay());
 
-export default function ScheduleGenerator() {
+    const specialEventsMap = new Map(
+      specialEventsConfig.filter(event => event.enabled).map((event) => [event.dayOfWeek, event.name])
+    );
+
+    for (let week = 0; week < 4; week++) {
+      const weekDays: CalendarWeek = Array(7).fill(null);
+      const rotated = rotate(PEOPLE, rotationIndex);
+      let personIndex = 0;
+
+      for (let offset = 0; offset < 7; offset++) {
+        const dayIndex = (startDayIndex + offset) % 7;
+        const dayName = DAYS[dayIndex];
+
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + week * 7 + offset);
+
+        let label = "";
+        const specialEvent = specialEventsMap.get(dayName);
+        if (specialEvent) {
+          label = specialEvent;
+        } else {
+          if (personIndex < rotated.length) {
+            label = rotated[personIndex];
+            personIndex++;
+          }
+        }
+
+        weekDays[dayIndex] = {
+          day: dayName,
+          date: formatDate(date),
+          label,
+        };
+      }
+
+      rotationIndex = (rotationIndex + personIndex) % PEOPLE.length;
+
+      weeks.push(weekDays);
+    }
+
+    return weeks;
+  }
+
   const [date, setDate] = useState("");
   const [startingPerson, setStartingPerson] = useState(PEOPLE[0]);
   const [calendar, setCalendar] = useState<CalendarType>([]);
   const calendarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (calendar.length > 0) {
+      const [year, month, day] = date.split("-").map(Number);
+      setCalendar(
+        generateCalendar(new Date(year, month - 1, day), startingPerson)
+      );
+    }
+  }, [peopleConfig, specialEventsConfig]);
 
   const exportToPng = async () => {
     if (!calendarRef.current) return;
@@ -246,6 +259,14 @@ export default function ScheduleGenerator() {
           </Card>
         </div>
       )}
+
+      <ConfigEditor
+        peopleConfig={peopleConfig}
+        specialEventsConfig={specialEventsConfig}
+        onPeopleConfigChange={setPeopleConfig}
+        onSpecialEventsConfigChange={setSpecialEventsConfig}
+        days={DAYS}
+      />
     </div>
   );
 }
