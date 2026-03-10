@@ -2,36 +2,29 @@ import { useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toPng } from "html-to-image";
+import { PEOPLE_CONFIG, SPECIAL_EVENTS_CONFIG } from "./config";
 
-const PEOPLE = [
-  "Allan",
-  "SrJoaquim",
-  "Edu",
-  "Lan",
-  "Mille",
-  "Pirate",
-  "Tininho",
-  "Calinho",
-  "Basic",
-  "King",
-  "Doug",
-];
-
-const SPECIAL_ASSETS = {
-  "VS Winner": "vs.png",
-  "Birthday": "birthday.jpg",
-  "Donor": "donor.png",
-};
+const PEOPLE = PEOPLE_CONFIG.filter((p) => p.enabled).map((p) => p.name);
 
 const DAYS = [
-  "Saturday",
   "Sunday",
   "Monday",
   "Tuesday",
   "Wednesday",
   "Thursday",
   "Friday",
+  "Saturday",
 ];
+
+interface CalendarCell {
+  day: string;
+  date: string;
+  label: string;
+}
+
+type CalendarWeek = (CalendarCell | null)[];
+
+type CalendarType = CalendarWeek[];
 
 function rotate(list: string[], start: number) {
   return list.slice(start).concat(list.slice(0, start));
@@ -44,18 +37,19 @@ function formatDate(date: Date) {
   });
 }
 
-function mapToSaturdayStart(jsDay: number) {
+function mapDayToGridIndex(jsDay: number) {
   // JS: 0=Sun … 6=Sat
-  // Grid: 0=Sat … 6=Fri
-  return (jsDay + 1) % 7;
+  // Grid: 0=Sun … 6=Sat
+  return jsDay;
 }
 
 function Avatar({ label }: { label: string }) {
-  const isPerson = PEOPLE.includes(label);
-  const imgSrc = isPerson
-    ? `/assets/img/${label.toLowerCase()}.png`
-    : SPECIAL_ASSETS[label as keyof typeof SPECIAL_ASSETS]
-    ? `/assets/img/${SPECIAL_ASSETS[label as keyof typeof SPECIAL_ASSETS]}`
+  const person = PEOPLE_CONFIG.find((p) => p.name === label);
+  const specialEvent = SPECIAL_EVENTS_CONFIG.find((e) => e.name === label);
+  const imgSrc = person
+    ? person.avatar_url
+    : specialEvent
+    ? specialEvent.avatar_url
     : null;
 
   return (
@@ -75,13 +69,13 @@ function Avatar({ label }: { label: string }) {
 function generateCalendar(
   startDate: Date,
   startingPerson: string
-) {
-  const weeks = [];
+): CalendarType {
+  const weeks: CalendarType = [];
   let rotationIndex = PEOPLE.indexOf(startingPerson);
-  const startDayIndex = mapToSaturdayStart(startDate.getDay());
+  const startDayIndex = mapDayToGridIndex(startDate.getDay());
 
   for (let week = 0; week < 4; week++) {
-    const weekDays = Array(7).fill(null);
+    const weekDays: CalendarWeek = Array(7).fill(null);
     const rotated = rotate(PEOPLE, rotationIndex);
 
     rotationIndex = (rotationIndex + 4) % PEOPLE.length;
@@ -94,9 +88,9 @@ function generateCalendar(
 
       let label = "";
       if (dayIndex === 0) label = rotated[0];
-      else if (dayIndex === 1) label = "VS Winner";
-      else if (dayIndex === 2) label = "Birthday";
-      else if (dayIndex === 3) label = "Donor";
+      else if (dayIndex === 1) label = SPECIAL_EVENTS_CONFIG[0].name;
+      else if (dayIndex === 2) label = SPECIAL_EVENTS_CONFIG[1].name;
+      else if (dayIndex === 3) label = SPECIAL_EVENTS_CONFIG[2].name;
       else label = rotated[dayIndex - 3];
 
       weekDays[dayIndex] = {
@@ -115,7 +109,7 @@ function generateCalendar(
 export default function ScheduleGenerator() {
   const [date, setDate] = useState("");
   const [startingPerson, setStartingPerson] = useState(PEOPLE[0]);
-  const [calendar, setCalendar] = useState<any[]>([]);
+  const [calendar, setCalendar] = useState<CalendarType>([]);
   const calendarRef = useRef<HTMLDivElement>(null);
 
   const exportToPng = async () => {
@@ -170,9 +164,12 @@ export default function ScheduleGenerator() {
 
         <Button
           className="bg-indigo-600 hover:bg-indigo-500"
-          onClick={() =>
-            setCalendar(generateCalendar(new Date(date), startingPerson))
-          }
+          onClick={() => {
+            const [year, month, day] = date.split("-").map(Number);
+            setCalendar(
+              generateCalendar(new Date(year, month - 1, day), startingPerson)
+            );
+          }}
           disabled={!date}
         >
           Generate
@@ -210,7 +207,7 @@ export default function ScheduleGenerator() {
                     key={wi}
                     className="grid grid-cols-7 gap-2 sm:gap-4 min-w-[900px]"
                   >
-                    {week.map((cell: any, di: number) =>
+                    {week.map((cell, di) =>
                       cell ? (
                         <div
                           key={`${wi}-${di}`}
