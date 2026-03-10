@@ -1,18 +1,21 @@
-import { useState, useRef, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { toPng } from "html-to-image";
-import { PEOPLE_CONFIG as initialPeopleConfig, SPECIAL_EVENTS_CONFIG as initialSpecialEventsConfig } from "./config";
-import { ConfigEditor } from "./components/ConfigEditor";
+import { useState, useRef, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { toPng } from 'html-to-image';
+import {
+  PEOPLE_CONFIG as initialPeopleConfig,
+  SPECIAL_EVENTS_CONFIG as initialSpecialEventsConfig,
+} from './config';
+import { ConfigEditor } from './components/ConfigEditor';
 
 const DAYS = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
 ];
 
 interface CalendarCell {
@@ -31,8 +34,8 @@ function rotate(list: string[], start: number) {
 
 function formatDate(date: Date) {
   return date.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -44,9 +47,13 @@ function mapDayToGridIndex(jsDay: number) {
 
 export default function ScheduleGenerator() {
   const [peopleConfig, setPeopleConfig] = useState(initialPeopleConfig);
-  const [specialEventsConfig, setSpecialEventsConfig] = useState(initialSpecialEventsConfig);
+  const [specialEventsConfig, setSpecialEventsConfig] = useState(
+    initialSpecialEventsConfig,
+  );
+  const [dateError, setDateError] = useState<string | null>(null);
 
-  const PEOPLE = peopleConfig.filter((p) => p.enabled)
+  const PEOPLE = peopleConfig
+    .filter((p) => p.enabled)
     .sort((a, b) => a.order - b.order)
     .map((p) => p.name);
 
@@ -56,8 +63,8 @@ export default function ScheduleGenerator() {
     const imgSrc = person
       ? person.avatar_url
       : specialEvent
-      ? specialEvent.avatar_url
-      : null;
+        ? specialEvent.avatar_url
+        : null;
 
     return (
       <div className="relative mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
@@ -65,7 +72,7 @@ export default function ScheduleGenerator() {
           <img
             src={imgSrc}
             alt={label}
-            onError={(e) => (e.currentTarget.style.display = "none")}
+            onError={(e) => (e.currentTarget.style.display = 'none')}
             className="w-full h-full object-cover"
           />
         )}
@@ -75,14 +82,16 @@ export default function ScheduleGenerator() {
 
   function generateCalendar(
     startDate: Date,
-    startingPerson: string
+    startingPerson: string,
   ): CalendarType {
     const weeks: CalendarType = [];
     let rotationIndex = PEOPLE.indexOf(startingPerson);
     const startDayIndex = mapDayToGridIndex(startDate.getDay());
 
     const specialEventsMap = new Map(
-      specialEventsConfig.filter(event => event.enabled).map((event) => [event.dayOfWeek, event.name])
+      specialEventsConfig
+        .filter((event) => event.enabled)
+        .map((event) => [event.dayOfWeek, event.name]),
     );
 
     for (let week = 0; week < 4; week++) {
@@ -97,7 +106,7 @@ export default function ScheduleGenerator() {
         const date = new Date(startDate);
         date.setDate(startDate.getDate() + week * 7 + offset);
 
-        let label = "";
+        let label = '';
         const specialEvent = specialEventsMap.get(dayName);
         if (specialEvent) {
           label = specialEvent;
@@ -123,30 +132,42 @@ export default function ScheduleGenerator() {
     return weeks;
   }
 
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState('');
   const [startingPerson, setStartingPerson] = useState(PEOPLE[0]);
   const [calendar, setCalendar] = useState<CalendarType>([]);
   const calendarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (calendar.length > 0) {
-      const [year, month, day] = date.split("-").map(Number);
+      const [year, month, day] = date.split('-').map(Number);
       setCalendar(
-        generateCalendar(new Date(year, month - 1, day), startingPerson)
+        generateCalendar(new Date(year, month - 1, day), startingPerson),
       );
     }
   }, [peopleConfig, specialEventsConfig]);
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = e.target.value;
+    const [year, month, day] = newDate.split('-').map(Number);
+    const dateObj = new Date(year, month - 1, day);
+    if (dateObj.getDay() !== 0) {
+      setDateError('Please select a Sunday as the start date.');
+    } else {
+      setDateError(null);
+    }
+    setDate(newDate);
+  };
 
   const exportToPng = async () => {
     if (!calendarRef.current) return;
 
     const dataUrl = await toPng(calendarRef.current, {
-      backgroundColor: "#0f172a",
+      backgroundColor: '#0f172a',
       pixelRatio: 2,
     });
 
-    const link = document.createElement("a");
-    link.download = "schedule.png";
+    const link = document.createElement('a');
+    link.download = 'schedule.png';
     link.href = dataUrl;
     link.click();
   };
@@ -154,26 +175,25 @@ export default function ScheduleGenerator() {
   return (
     <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-8 min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100">
       <h1 className="text-3xl font-extrabold text-center tracking-wide">
-        BRNE Train Schedule
+        Alliance Train Conductor Schedule
       </h1>
 
       <div className="flex justify-center gap-4 items-end flex-wrap">
         <div className="flex flex-col">
-          <label className="text-sm mb-1 text-gray-300">
-            Start Date
-          </label>
+          <label className="text-sm mb-1 text-gray-300">Start Date</label>
           <input
             type="date"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={handleDateChange}
             className="border border-gray-700 bg-gray-800 rounded px-3 py-2 text-gray-100"
           />
+          {dateError && (
+            <p className="text-red-500 text-sm mt-1">{dateError}</p>
+          )}
         </div>
 
         <div className="flex flex-col">
-          <label className="text-sm mb-1 text-gray-300">
-            Starting Person
-          </label>
+          <label className="text-sm mb-1 text-gray-300">Starting Person</label>
           <select
             value={startingPerson}
             onChange={(e) => setStartingPerson(e.target.value)}
@@ -190,12 +210,12 @@ export default function ScheduleGenerator() {
         <Button
           className="bg-indigo-600 hover:bg-indigo-500"
           onClick={() => {
-            const [year, month, day] = date.split("-").map(Number);
+            const [year, month, day] = date.split('-').map(Number);
             setCalendar(
-              generateCalendar(new Date(year, month - 1, day), startingPerson)
+              generateCalendar(new Date(year, month - 1, day), startingPerson),
             );
           }}
-          disabled={!date}
+          disabled={!date || !!dateError}
         >
           Generate
         </Button>
@@ -250,7 +270,7 @@ export default function ScheduleGenerator() {
                         </div>
                       ) : (
                         <div key={`${wi}-${di}`} />
-                      )
+                      ),
                     )}
                   </div>
                 ))}
