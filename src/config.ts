@@ -1,7 +1,7 @@
 export const PEOPLE_CONFIG = [
   { name: "Allan", avatar_url: "/assets/img/allan.png", enabled: true, order: 0 },
-  { name: "SrJoaquim", avatar_url: "/assets/img/srjoaquim.png", enabled: true, order: 2 },
-  { name: "Edu", avatar_url: "/assets/img/edu.png", enabled: true, order: 1 },
+  { name: "SrJoaquim", avatar_url: "/assets/img/srjoaquim.png", enabled: true, order: 1 },
+  { name: "Edu", avatar_url: "/assets/img/edu.png", enabled: true, order: 2 },
   { name: "Lan", avatar_url: "/assets/img/lan.png", enabled: true, order: 3 },
   { name: "Mille", avatar_url: "/assets/img/mille.png", enabled: true, order: 4 },
   { name: "Pirate", avatar_url: "/assets/img/pirate.png", enabled: true, order: 5 },
