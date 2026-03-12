@@ -200,8 +200,8 @@ export default function ScheduleGenerator() {
 
         {calendar.length > 0 && (
           <Button
-            variant="outline"
-            className="border-indigo-500 text-indigo-300 hover:bg-indigo-900/30"
+            variant="default"
+            className="bg-indigo-500 hover:bg-indigo-600 text-white"
             onClick={exportToPng}
           >
             Export PNG
